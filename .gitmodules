@@ -1,0 +1,15 @@
+[submodule "bems_legacy_backend"]
+	path = bems_legacy_backend
+	url = https://github.com/Batterfly-co/bems_legacy_backend
+[submodule "ebms_legacy_backend"]
+	path = ebms_legacy_backend
+	url = https://github.com/Batterfly-co/ebms_legacy_backend
+[submodule "bems_legacy_frontend"]
+	path = bems_legacy_frontend
+	url = https://github.com/Batterfly-co/bems_legacy_frontend
+[submodule "ebms_legacy_frontend"]
+	path = ebms_legacy_frontend
+	url = https://github.com/Batterfly-co/ebms_legacy_frontend
+[submodule "ebms_legacy_python_module"]
+	path = ebms_legacy_python_module
+	url = https://github.com/Batterfly-co/ebms_legacy_python_module
