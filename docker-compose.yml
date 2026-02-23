@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  mariadb:
+    image: mariadb:10.6
+    environment:
+      MYSQL_ROOT_PASSWORD: batterfly123!@#
+      MYSQL_DATABASE: ara_ebms_2
+    ports:
+      - "3308:3306"
+    volumes:
+      - ./db_data:/var/lib/mysql
+    restart: always
+
+  bems_backend:
+    build:
+      context: ./bems_legacy_backend
+      dockerfile: Dockerfile
+    ports:
+      - "1124:1124"
+    depends_on:
+      - mariadb
+    restart: on-failure
+
+  bems_frontend:
+    build:
+      context: ./bems_legacy_frontend
+      dockerfile: Dockerfile
+    ports:
+      - "1123:80"
+    depends_on:
+      - bems_backend
+    restart: on-failure
+
+  ebms_backend:
+    build:
+      context: ./ebms_legacy_backend
+      dockerfile: Dockerfile
+    ports:
+      - "1122:1122"
+    depends_on:
+      - mariadb
+    restart: on-failure
+
+  ebms_frontend:
+    build:
+      context: ./ebms_legacy_frontend
+      dockerfile: Dockerfile
+    ports:
+      - "1234:80"
+    depends_on:
+      - ebms_backend
+    restart: on-failure
+
+  python_module:
+    build:
+      context: ./ebms_legacy_python_module
+      dockerfile: Dockerfile
+    depends_on:
+      - mariadb
+    restart: on-failure
