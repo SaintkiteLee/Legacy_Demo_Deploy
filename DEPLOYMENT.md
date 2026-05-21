@@ -29,6 +29,10 @@ Set these secrets in the parent deployment repository:
 - `DEPLOY_DIR`: absolute path to this repository on the deployment server, or a
   path that starts with `~/`
 - `DEPLOY_PORT`: SSH port, optional, defaults to `22`
+- `DEPLOY_GITHUB_TOKEN`: optional GitHub token for HTTPS git remotes on the
+  deployment server. If omitted, the workflow token is used. For private
+  submodules in other repositories, use a token with contents read access to the
+  parent repository and all submodule repositories.
 
 The workflow uses the existing `$HOME/.ssh/saint_maas` private key from the
 self-hosted runner account. It does not create SSH keys, install keys, run
