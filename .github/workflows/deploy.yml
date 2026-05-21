@@ -53,6 +53,17 @@ jobs:
           : "${DEPLOY_USER:?DEPLOY_USER secret is required}"
           : "${DEPLOY_DIR:?DEPLOY_DIR secret is required}"
 
+          DEPLOY_SSH_KEY_PATH="$HOME/.ssh/saint_maas"
+          if [ ! -f "$DEPLOY_SSH_KEY_PATH" ]; then
+            echo "::error::SSH key not found: $DEPLOY_SSH_KEY_PATH"
+            exit 1
+          fi
+
+          if [ ! -r "$DEPLOY_SSH_KEY_PATH" ]; then
+            echo "::error::SSH key is not readable: $DEPLOY_SSH_KEY_PATH"
+            exit 1
+          fi
+
           case "$MODULE" in
             all|bems_legacy_backend|bems_legacy_frontend|ebms_legacy_backend|ebms_legacy_frontend|ebms_legacy_python_module) ;;
             *)
@@ -72,6 +83,7 @@ jobs:
           fi
 
           echo "DEPLOY_PORT=${DEPLOY_PORT:-22}" >> "$GITHUB_ENV"
+          echo "DEPLOY_SSH_KEY_PATH=$DEPLOY_SSH_KEY_PATH" >> "$GITHUB_ENV"
 
       - name: Checkout parent repository
         uses: actions/checkout@v4
@@ -113,14 +125,6 @@ jobs:
             -m "Update ${MODULE} to ${SUBMODULE_SHA} from ${SUBMODULE_BRANCH}."
           git push origin "HEAD:${PARENT_BRANCH}"
 
-      - name: Trust deployment host
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          install -m 700 -d ~/.ssh
-          ssh-keyscan -p "$DEPLOY_PORT" -H "$DEPLOY_HOST" >> ~/.ssh/known_hosts
-
       - name: Deploy with Docker Compose
         shell: bash
         run: |
@@ -135,6 +139,10 @@ jobs:
           )
 
           ssh -p "$DEPLOY_PORT" \
+            -i "$DEPLOY_SSH_KEY_PATH" \
+            -o BatchMode=yes \
+            -o IdentitiesOnly=yes \
+            -o StrictHostKeyChecking=yes \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "${remote_env[*]} bash -s" <<'REMOTE'
           set -euo pipefail

@@ -29,8 +29,10 @@ Set these secrets in the parent deployment repository:
 - `DEPLOY_DIR`: absolute path to this repository on the deployment server
 - `DEPLOY_PORT`: SSH port, optional, defaults to `22`
 
-The SSH key is expected to already exist on the self-hosted runner account that
-executes the workflow.
+The workflow uses the existing `$HOME/.ssh/saint_maas` private key from the
+self-hosted runner account. It does not create SSH keys, install keys, run
+`ssh-copy-id`, create `~/.ssh`, or append to `known_hosts`. The key and trusted
+host entry must already exist on the runner.
 
 Optional repository variable:
 
