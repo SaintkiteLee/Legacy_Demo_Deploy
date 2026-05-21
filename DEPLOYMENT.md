@@ -26,7 +26,8 @@ Set these secrets in the parent deployment repository:
 
 - `DEPLOY_HOST`: deployment server hostname or IP
 - `DEPLOY_USER`: SSH username
-- `DEPLOY_DIR`: absolute path to this repository on the deployment server
+- `DEPLOY_DIR`: absolute path to this repository on the deployment server, or a
+  path that starts with `~/`
 - `DEPLOY_PORT`: SSH port, optional, defaults to `22`
 
 The workflow uses the existing `$HOME/.ssh/saint_maas` private key from the
