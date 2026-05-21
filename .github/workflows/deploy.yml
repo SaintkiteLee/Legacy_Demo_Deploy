@@ -52,8 +52,10 @@ jobs:
           : "${DEPLOY_HOST:?DEPLOY_HOST secret is required}"
           : "${DEPLOY_USER:?DEPLOY_USER secret is required}"
           : "${DEPLOY_DIR:?DEPLOY_DIR secret is required}"
+          DEPLOY_PORT="${DEPLOY_PORT:-22}"
 
           DEPLOY_SSH_KEY_PATH="$HOME/.ssh/saint_maas"
+          DEPLOY_KNOWN_HOSTS_PATH="$HOME/.ssh/known_hosts"
           if [ ! -f "$DEPLOY_SSH_KEY_PATH" ]; then
             echo "::error::SSH key not found: $DEPLOY_SSH_KEY_PATH"
             exit 1
@@ -61,6 +63,29 @@ jobs:
 
           if [ ! -r "$DEPLOY_SSH_KEY_PATH" ]; then
             echo "::error::SSH key is not readable: $DEPLOY_SSH_KEY_PATH"
+            exit 1
+          fi
+
+          if [ ! -f "$DEPLOY_KNOWN_HOSTS_PATH" ]; then
+            echo "::error::known_hosts not found: $DEPLOY_KNOWN_HOSTS_PATH"
+            echo "::error::Register the deploy host key on the self-hosted runner before running this workflow."
+            exit 1
+          fi
+
+          if [ ! -r "$DEPLOY_KNOWN_HOSTS_PATH" ]; then
+            echo "::error::known_hosts is not readable: $DEPLOY_KNOWN_HOSTS_PATH"
+            exit 1
+          fi
+
+          if [ "$DEPLOY_PORT" = "22" ]; then
+            lookup_host="$DEPLOY_HOST"
+          else
+            lookup_host="[$DEPLOY_HOST]:$DEPLOY_PORT"
+          fi
+
+          if ! ssh-keygen -F "$lookup_host" -f "$DEPLOY_KNOWN_HOSTS_PATH" > /dev/null; then
+            echo "::error::No trusted host key found for $lookup_host in $DEPLOY_KNOWN_HOSTS_PATH"
+            echo "::error::Add the host key to the self-hosted runner manually. This workflow will not create or append known_hosts entries."
             exit 1
           fi
 
@@ -82,8 +107,9 @@ jobs:
             exit 1
           fi
 
-          echo "DEPLOY_PORT=${DEPLOY_PORT:-22}" >> "$GITHUB_ENV"
+          echo "DEPLOY_PORT=$DEPLOY_PORT" >> "$GITHUB_ENV"
           echo "DEPLOY_SSH_KEY_PATH=$DEPLOY_SSH_KEY_PATH" >> "$GITHUB_ENV"
+          echo "DEPLOY_KNOWN_HOSTS_PATH=$DEPLOY_KNOWN_HOSTS_PATH" >> "$GITHUB_ENV"
 
       - name: Checkout parent repository
         uses: actions/checkout@v4
@@ -143,6 +169,7 @@ jobs:
             -o BatchMode=yes \
             -o IdentitiesOnly=yes \
             -o StrictHostKeyChecking=yes \
+            -o UserKnownHostsFile="$DEPLOY_KNOWN_HOSTS_PATH" \
             "${DEPLOY_USER}@${DEPLOY_HOST}" \
             "${remote_env[*]} bash -s" <<'REMOTE'
           set -euo pipefail

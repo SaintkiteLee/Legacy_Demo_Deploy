@@ -34,6 +34,10 @@ self-hosted runner account. It does not create SSH keys, install keys, run
 `ssh-copy-id`, create `~/.ssh`, or append to `known_hosts`. The key and trusted
 host entry must already exist on the runner.
 
+The trusted host key must be present in `$HOME/.ssh/known_hosts` for
+`DEPLOY_HOST` and `DEPLOY_PORT`. The workflow validates that entry before it
+tries to open the SSH session.
+
 Optional repository variable:
 
 - `DEPLOY_BRANCH`: parent repository branch to deploy, defaults to `develop`
